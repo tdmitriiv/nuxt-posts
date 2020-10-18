@@ -80,14 +80,25 @@
   </v-row>
 </template>
 
-<script>
+<script lang="ts">
+import { Vue, Component, namespace } from 'nuxt-property-decorator'
 import Logo from '~/components/Logo.vue'
 import VuetifyLogo from '~/components/VuetifyLogo.vue'
 
-export default {
+const posts = namespace('posts')
+
+@Component({
   components: {
     Logo,
     VuetifyLogo,
   },
+})
+export default class Feed extends Vue {
+  @posts.Action('fetchPosts')
+  public fetchPosts!: () => any[]
+
+  async beforeMount() {
+    await this.fetchPosts()
+  }
 }
 </script>
