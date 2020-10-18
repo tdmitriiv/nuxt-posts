@@ -1,10 +1,7 @@
 <template>
   <v-row justify="center" align="center">
     <v-col cols="12" sm="8" md="6">
-      <div class="text-center">
-        <logo />
-        <vuetify-logo />
-      </div>
+      {{ posts }}
       <v-card>
         <v-card-title class="headline">
           Welcome to the Vuetify + Nuxt.js template
@@ -94,10 +91,13 @@ const posts = namespace('posts')
   },
 })
 export default class Feed extends Vue {
-  @posts.Action('fetchPosts')
+  @posts.State
+  public posts!: any[]
+
+  @posts.Action
   public fetchPosts!: () => any[]
 
-  async beforeMount() {
+  async fetch() {
     await this.fetchPosts()
   }
 }
