@@ -34,6 +34,12 @@
           <v-btn color="primary" nuxt to="/inspire"> View </v-btn>
         </v-card-actions>
       </v-card>
+      <v-pagination
+        v-model="page"
+        :length="4"
+        circle
+        @input="onChangePage"
+      ></v-pagination>
     </v-col>
   </v-row>
 </template>
@@ -53,14 +59,24 @@ const posts = namespace('posts')
   },
 })
 export default class Feed extends Vue {
+  page: number = 1
+
   @posts.State
   public posts!: Post[]
 
   @posts.Action
-  public fetchPosts!: () => any[]
+  public fetchPosts!: (page: number) => any[]
 
   async fetch() {
-    await this.fetchPosts()
+    if (this.$route.query.page) {
+      this.page = parseInt(this.$route.query.page, 10)
+    }
+    await this.fetchPosts(this.page)
+  }
+
+  onChangePage(value) {
+    this.fetchPosts(value)
+    this.$router.replace({ path: '/', query: { page: value }})
   }
 }
 </script>
