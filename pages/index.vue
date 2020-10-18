@@ -80,6 +80,10 @@ export default class Feed extends Vue {
     return Math.round(this.total / this.pageSize)
   }
 
+  scrollTop(): void {
+    window.scrollTo(0, 0)
+  }
+
   async fetch() {
     await this.fetchTotal()
     if (this.$route.query.page) {
@@ -90,7 +94,8 @@ export default class Feed extends Vue {
 
   onChangePage(value: number) {
     this.fetchPosts(value)
-    this.$router.replace({ path: '/', query: { page: value.toString() }})
+    this.$router.replace({ path: '/', query: { page: value.toString() } })
+    this.scrollTop()
   }
 }
 </script>
