@@ -36,7 +36,7 @@
       </v-card>
       <v-pagination
         v-model="page"
-        :length="4"
+        :length="pageCount"
         circle
         @input="onChangePage"
       ></v-pagination>
@@ -49,6 +49,7 @@ import { Vue, Component, namespace } from 'nuxt-property-decorator'
 import Logo from '~/components/Logo.vue'
 import VuetifyLogo from '~/components/VuetifyLogo.vue'
 import { Post } from '~/types/posts'
+import { DEFAULT_PAGE_SIZE } from '~/utils/posts'
 
 const posts = namespace('posts')
 
@@ -61,22 +62,35 @@ const posts = namespace('posts')
 export default class Feed extends Vue {
   page: number = 1
 
+  pageSize: number = DEFAULT_PAGE_SIZE
+
   @posts.State
   public posts!: Post[]
 
+  @posts.State
+  public total!: number
+
   @posts.Action
-  public fetchPosts!: (page: number) => any[]
+  public fetchPosts!: (page: number) => Promise<void>
+
+  @posts.Action
+  public fetchTotal!: () => Promise<void>
+
+  get pageCount() {
+    return Math.round(this.total / this.pageSize)
+  }
 
   async fetch() {
+    await this.fetchTotal()
     if (this.$route.query.page) {
-      this.page = parseInt(this.$route.query.page, 10)
+      this.page = parseInt(this.$route.query.page.toString(), 10)
     }
     await this.fetchPosts(this.page)
   }
 
-  onChangePage(value) {
+  onChangePage(value: number) {
     this.fetchPosts(value)
-    this.$router.replace({ path: '/', query: { page: value }})
+    this.$router.replace({ path: '/', query: { page: value.toString() }})
   }
 }
 </script>
