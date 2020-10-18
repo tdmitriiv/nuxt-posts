@@ -1,76 +1,37 @@
 <template>
   <v-row justify="center" align="center">
     <v-col cols="12" sm="8" md="6">
-      {{ posts }}
-      <v-card>
+      <v-card v-for="(post, key) in posts" :key="key" class="mb-8">
         <v-card-title class="headline">
-          Welcome to the Vuetify + Nuxt.js template
+          {{ post.title }}
         </v-card-title>
         <v-card-text>
-          <p>
-            Vuetify is a progressive Material Design component framework for
-            Vue.js. It was designed to empower developers to create amazing
-            applications.
-          </p>
-          <p>
-            For more information on Vuetify, check out the
-            <a
-              href="https://vuetifyjs.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              documentation </a
-            >.
-          </p>
-          <p>
-            If you have questions, please join the official
-            <a
-              href="https://chat.vuetifyjs.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="chat"
-            >
-              discord </a
-            >.
-          </p>
-          <p>
-            Find a bug? Report it on the github
-            <a
-              href="https://github.com/vuetifyjs/vuetify/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="contribute"
-            >
-              issue board </a
-            >.
-          </p>
-          <p>
-            Thank you for developing with Vuetify and I look forward to bringing
-            more exciting features in the future.
-          </p>
-          <div class="text-xs-right">
-            <em><small>&mdash; John Leider</small></em>
-          </div>
-          <hr class="my-3" />
-          <a
-            href="https://nuxtjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
+          {{ post.body }}
+
+          <v-timeline
+            align-top
+            dense
           >
-            Nuxt Documentation
-          </a>
-          <br />
-          <a
-            href="https://github.com/nuxt/nuxt.js"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Nuxt GitHub
-          </a>
+            <v-timeline-item
+              v-for="(comment, commentKey) in post.comments"
+              :key="commentKey"
+              small
+            >
+              <div>
+                <div class="font-weight-normal">
+                  <strong>{{ comment.email }}</strong>
+                </div>
+                <div>{{ comment.body }}</div>
+              </div>
+            </v-timeline-item>
+          </v-timeline>
         </v-card-text>
         <v-card-actions>
+          <v-chip small color="secondary" class="white--text">
+            {{ post.user.name }}
+          </v-chip>
           <v-spacer />
-          <v-btn color="primary" nuxt to="/inspire"> Continue </v-btn>
+          <v-btn color="primary" nuxt to="/inspire"> View </v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
@@ -81,6 +42,7 @@
 import { Vue, Component, namespace } from 'nuxt-property-decorator'
 import Logo from '~/components/Logo.vue'
 import VuetifyLogo from '~/components/VuetifyLogo.vue'
+import { Post } from '~/types/posts'
 
 const posts = namespace('posts')
 
@@ -92,7 +54,7 @@ const posts = namespace('posts')
 })
 export default class Feed extends Vue {
   @posts.State
-  public posts!: any[]
+  public posts!: Post[]
 
   @posts.Action
   public fetchPosts!: () => any[]
