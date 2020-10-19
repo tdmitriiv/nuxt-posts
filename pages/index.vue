@@ -8,10 +8,7 @@
         <v-card-text>
           {{ post.body }}
 
-          <v-timeline
-            align-top
-            dense
-          >
+          <v-timeline align-top dense>
             <v-timeline-item
               v-for="(comment, commentKey) in post.comments"
               :key="commentKey"
@@ -82,6 +79,12 @@ export default class Feed extends Vue {
 
   scrollTop(): void {
     window.scrollTo(0, 0)
+  }
+
+  activated() {
+    if (this.$fetchState.timestamp <= Date.now() - 60000) {
+      this.$fetch()
+    }
   }
 
   async fetch() {
