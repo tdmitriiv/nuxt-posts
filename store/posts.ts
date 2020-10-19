@@ -5,6 +5,7 @@ import { Post, User, Comment } from '~/types/posts'
 import { DEFAULT_PAGE_SIZE } from '~/utils/posts'
 
 const loadUsers = (posts: Post[]): Promise<User[]> => {
+  /* TODO можно пользователя хранить и брать из state, при переходе из ленты */
   const userIDs = posts.map((post: Post) => post.userId)
   const userIdQuery = uniq(userIDs)
     .map((id: number) => `id=${id}`)
@@ -12,9 +13,10 @@ const loadUsers = (posts: Post[]): Promise<User[]> => {
   return $axios.$get(`users?${userIdQuery}`)
 }
 
-const loadComments = (posts: Post[]): Promise<Array<Comment[]>> => {
+const loadComments = (posts: Post[], count?: number): Promise<Array<Comment[]>> => {
   const promises: Array<Promise<any>> = posts.map((post: Post) => {
-    return $axios.$get(`comments?postId=${post.id}&_limit=2`)
+    const limit = count ? `&_limit=${count}` : ''
+    return $axios.$get(`comments?postId=${post.id}${limit}`)
   })
 
   return Promise.all(promises)
@@ -36,9 +38,12 @@ const mergePostData = (
   })
 }
 
-const preparePostsData = async (posts: Post[]): Promise<Post[]> => {
+const preparePostsData = async (
+  posts: Post[],
+  commentCount?: number
+): Promise<Post[]> => {
   const users = await loadUsers(posts)
-  const comments = await loadComments(posts)
+  const comments = await loadComments(posts, commentCount)
 
   return mergePostData(posts, users, comments)
 }
@@ -61,6 +66,11 @@ export default class Posts extends VuexModule {
     this.total = count
   }
 
+  @Mutation
+  private SET_POST(post: Post) {
+    this.post = post
+  }
+
   @Action
   public async fetchTotal(): Promise<void> {
     const posts = await $axios.$get('posts')
@@ -74,7 +84,14 @@ export default class Posts extends VuexModule {
   ): Promise<void> {
     const offset = (page - 1) * pageSize
     const posts = await $axios.$get(`posts?_start=${offset}&_limit=${pageSize}`)
-    const preparedPosts = await preparePostsData(posts)
+    const preparedPosts = await preparePostsData(posts, 2)
     this.SET_POSTS(preparedPosts)
+  }
+
+  @Action
+  public async fetchSinglePost(id: number): Promise<void> {
+    const post = await $axios.$get(`posts/${id}`)
+    const preparedPosts = await preparePostsData([post])
+    this.SET_POST(preparedPosts[0])
   }
 }
