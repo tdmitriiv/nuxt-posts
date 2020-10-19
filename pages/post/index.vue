@@ -7,7 +7,6 @@
         </v-card-title>
         <v-card-text>
           {{ post.body }}
-
           <v-timeline align-top dense>
             <v-timeline-item
               v-for="(comment, commentKey) in post.comments"
@@ -28,53 +27,42 @@
             {{ post.user.name }}
           </v-chip>
           <v-spacer />
-          <v-btn color="primary" nuxt to="/inspire"> View </v-btn>
+          <v-btn color="primary" nuxt :to="`/${post.id}`"> View </v-btn>
         </v-card-actions>
       </v-card>
       <v-pagination
         v-model="page"
         :length="pageCount"
         circle
+        :total-visible="5"
         @input="onChangePage"
-      ></v-pagination>
+      />
     </v-col>
   </v-row>
 </template>
 
 <script lang="ts">
-import { Vue, Component, namespace } from 'nuxt-property-decorator'
-import Logo from '~/components/Logo.vue'
-import VuetifyLogo from '~/components/VuetifyLogo.vue'
+import { Vue, Component } from 'nuxt-property-decorator'
 import { Post } from '~/types/posts'
 import { DEFAULT_PAGE_SIZE } from '~/utils/posts'
+import { PostModule } from '~/store'
 
-const posts = namespace('posts')
-
-@Component({
-  components: {
-    Logo,
-    VuetifyLogo,
-  },
-})
+@Component
 export default class Feed extends Vue {
   page: number = 1
 
   pageSize: number = DEFAULT_PAGE_SIZE
 
-  @posts.State
-  public posts!: Post[]
+  get posts(): Post[] {
+    return PostModule.posts
+  }
 
-  @posts.State
-  public total!: number
+  get postsTotal(): number {
+    return PostModule.total
+  }
 
-  @posts.Action
-  public fetchPosts!: (page: number) => Promise<void>
-
-  @posts.Action
-  public fetchTotal!: () => Promise<void>
-
-  get pageCount() {
-    return Math.round(this.total / this.pageSize)
+  get pageCount(): number {
+    return Math.round(this.postsTotal / this.pageSize)
   }
 
   scrollTop(): void {
@@ -88,15 +76,15 @@ export default class Feed extends Vue {
   }
 
   async fetch() {
-    await this.fetchTotal()
+    await PostModule.fetchTotal()
     if (this.$route.query.page) {
       this.page = parseInt(this.$route.query.page.toString(), 10)
     }
-    await this.fetchPosts(this.page)
+    await PostModule.fetchPosts(this.page)
   }
 
   onChangePage(value: number) {
-    this.fetchPosts(value)
+    PostModule.fetchPosts(value)
     this.$router.replace({ path: '/', query: { page: value.toString() } })
     this.scrollTop()
   }
