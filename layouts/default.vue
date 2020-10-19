@@ -10,7 +10,7 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <nuxt />
+        <nuxt keep-alive />
       </v-container>
     </v-main>
   </v-app>
